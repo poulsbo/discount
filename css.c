@@ -24,18 +24,18 @@
 static void
 stylesheets(Paragraph *p, Cstring *f)
 {
-    Line* q;
+	Line* q;
 
-    for ( ; p ; p = p->next ) {
-	if ( p->typ == STYLE ) {
-	    for ( q = p->text; q ; q = q->next ) {
-		Cswrite(f, T(q->text), S(q->text));
-		Csputc('\n', f);
-	    }
+	for ( ; p ; p = p->next ) {
+		if ( p->typ == STYLE ) {
+			for ( q = p->text; q ; q = q->next ) {
+				Cswrite(f, T(q->text), S(q->text));
+				Csputc('\n', f);
+			}
+		}
+		if ( p->down )
+			stylesheets(p->down, f);
 	}
-	if ( p->down )
-	    stylesheets(p->down, f);
-    }
 }
 
 
@@ -44,28 +44,28 @@ stylesheets(Paragraph *p, Cstring *f)
 int
 mkd_css(Document *d, char **res)
 {
-    Cstring f;
-    int size;
+	Cstring f;
+	int size;
 
-    if ( res && d && d->compiled ) {
-	*res = 0;
-	CREATE(f);
-	RESERVE(f, 100);
-	stylesheets(d->code, &f);
-			
-	if ( (size = S(f)) > 0 ) {
-	    EXPAND(f) = 0;
-			/* HACK ALERT! HACK ALERT! HACK ALERT! */
-	    *res = T(f);/* we know that a T(Cstring) is a character pointer */
-			/* so we can simply pick it up and carry it away, */
-			/* leaving the husk of the Ctring on the stack */
-			/* END HACK ALERT */
+	if ( res && d && d->compiled ) {
+		*res = 0;
+		CREATE(f);
+		RESERVE(f, 100);
+		stylesheets(d->code, &f);
+						
+		if ( (size = S(f)) > 0 ) {
+			EXPAND(f) = 0;
+						/* HACK ALERT! HACK ALERT! HACK ALERT! */
+			*res = T(f);/* we know that a T(Cstring) is a character pointer */
+						/* so we can simply pick it up and carry it away, */
+						/* leaving the husk of the Ctring on the stack */
+						/* END HACK ALERT */
+		}
+		else
+			DELETE(f);
+		return size;
 	}
-	else
-	    DELETE(f);
-	return size;
-    }
-    return EOF;
+	return EOF;
 }
 
 
@@ -74,12 +74,12 @@ mkd_css(Document *d, char **res)
 int
 mkd_generatecss(Document *d, FILE *f)
 {
-    char *res;
-    int written = EOF, size = mkd_css(d, &res);
+	char *res;
+	int written = EOF, size = mkd_css(d, &res);
 
-    if ( size > 0 )
-	written = fwrite(res, 1, size, f);
-    if ( res )
-	free(res);
-    return (written == size) ? size : EOF;
+	if ( size > 0 )
+		written = fwrite(res, 1, size, f);
+	if ( res )
+		free(res);
+	return (written == size) ? size : EOF;
 }

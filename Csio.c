@@ -11,7 +11,7 @@
 void
 Csputc(int c, Cstring *iot)
 {
-    EXPAND(*iot) = c;
+	EXPAND(*iot) = c;
 }
 
 
@@ -20,18 +20,18 @@ Csputc(int c, Cstring *iot)
 int
 Csprintf(Cstring *iot, char *fmt, ...)
 {
-    va_list ptr;
-    int siz=100;
+	va_list ptr;
+	int siz=100;
 
-    do {
-	RESERVE(*iot, siz);
-	va_start(ptr, fmt);
-	siz = vsnprintf(T(*iot)+S(*iot), ALLOCATED(*iot)-S(*iot), fmt, ptr);
-	va_end(ptr);
-    } while ( siz > (ALLOCATED(*iot)-S(*iot)) );
+	do {
+		RESERVE(*iot, siz);
+		va_start(ptr, fmt);
+		siz = vsnprintf(T(*iot)+S(*iot), ALLOCATED(*iot)-S(*iot), fmt, ptr);
+		va_end(ptr);
+	} while ( siz > (ALLOCATED(*iot)-S(*iot)) );
 
-    S(*iot) += siz;
-    return siz;
+	S(*iot) += siz;
+	return siz;
 }
 
 
@@ -40,10 +40,10 @@ Csprintf(Cstring *iot, char *fmt, ...)
 int
 Cswrite(Cstring *iot, char *bfr, int size)
 {
-    RESERVE(*iot, size);
-    memcpy(T(*iot)+S(*iot), bfr, size);
-    S(*iot) += size;
-    return size;
+	RESERVE(*iot, size);
+	memcpy(T(*iot)+S(*iot), bfr, size);
+	S(*iot) += size;
+	return size;
 }
 
 
@@ -52,10 +52,10 @@ Cswrite(Cstring *iot, char *bfr, int size)
 void
 Csreparse(Cstring *iot, char *buf, int size, int flags)
 {
-    MMIOT f;
-    ___mkd_initmmiot(&f, 0);
-    ___mkd_reparse(buf, size, 0, &f, 0);
-    ___mkd_emblock(&f);
-    SUFFIX(*iot, T(f.out), S(f.out));
-    ___mkd_freemmiot(&f, 0);
+	MMIOT f;
+	___mkd_initmmiot(&f, 0);
+	___mkd_reparse(buf, size, 0, &f, 0);
+	___mkd_emblock(&f);
+	SUFFIX(*iot, T(f.out), S(f.out));
+	___mkd_freemmiot(&f, 0);
 }

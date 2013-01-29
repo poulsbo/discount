@@ -22,8 +22,8 @@
 void
 ___mkd_freeLine(Line *ptr)
 {
-    DELETE(ptr->text);
-    free(ptr);
+	DELETE(ptr->text);
+	free(ptr);
 }
 
 
@@ -32,9 +32,9 @@ ___mkd_freeLine(Line *ptr)
 void
 ___mkd_freeLines(Line *p)
 {
-    if (p->next)
-	 ___mkd_freeLines(p->next);
-    ___mkd_freeLine(p);
+	if (p->next)
+		 ___mkd_freeLines(p->next);
+	___mkd_freeLine(p);
 }
 
 
@@ -43,15 +43,15 @@ ___mkd_freeLines(Line *p)
 void
 ___mkd_freeParagraph(Paragraph *p)
 {
-    if (p->next)
-	___mkd_freeParagraph(p->next);
-    if (p->down)
-	___mkd_freeParagraph(p->down);
-    if (p->text)
-	___mkd_freeLines(p->text);
-    if (p->ident)
-	free(p->ident);
-    free(p);
+	if (p->next)
+		___mkd_freeParagraph(p->next);
+	if (p->down)
+		___mkd_freeParagraph(p->down);
+	if (p->text)
+		___mkd_freeLines(p->text);
+	if (p->ident)
+		free(p->ident);
+	free(p);
 }
 
 
@@ -60,9 +60,9 @@ ___mkd_freeParagraph(Paragraph *p)
 void
 ___mkd_freefootnote(Footnote *f)
 {
-    DELETE(f->tag);
-    DELETE(f->link);
-    DELETE(f->title);
+	DELETE(f->tag);
+	DELETE(f->link);
+	DELETE(f->title);
 }
 
 
@@ -71,14 +71,14 @@ ___mkd_freefootnote(Footnote *f)
 void
 ___mkd_freefootnotes(MMIOT *f)
 {
-    int i;
+	int i;
 
-    if ( f->footnotes ) {
-	for (i=0; i < S(*f->footnotes); i++)
-	    ___mkd_freefootnote( &T(*f->footnotes)[i] );
-	DELETE(*f->footnotes);
-	free(f->footnotes);
-    }
+	if ( f->footnotes ) {
+		for (i=0; i < S(*f->footnotes); i++)
+			___mkd_freefootnote( &T(*f->footnotes)[i] );
+		DELETE(*f->footnotes);
+		free(f->footnotes);
+	}
 }
 
 
@@ -87,18 +87,18 @@ ___mkd_freefootnotes(MMIOT *f)
 void
 ___mkd_initmmiot(MMIOT *f, void *footnotes)
 {
-    if ( f ) {
-	memset(f, 0, sizeof *f);
-	CREATE(f->in);
-	CREATE(f->out);
-	CREATE(f->Q);
-	if ( footnotes )
-	    f->footnotes = footnotes;
-	else {
-	    f->footnotes = malloc(sizeof f->footnotes[0]);
-	    CREATE(*f->footnotes);
+	if ( f ) {
+		memset(f, 0, sizeof *f);
+		CREATE(f->in);
+		CREATE(f->out);
+		CREATE(f->Q);
+		if ( footnotes )
+			f->footnotes = footnotes;
+		else {
+			f->footnotes = malloc(sizeof f->footnotes[0]);
+			CREATE(*f->footnotes);
+		}
 	}
-    }
 }
 
 
@@ -107,14 +107,14 @@ ___mkd_initmmiot(MMIOT *f, void *footnotes)
 void
 ___mkd_freemmiot(MMIOT *f, void *footnotes)
 {
-    if ( f ) {
-	DELETE(f->in);
-	DELETE(f->out);
-	DELETE(f->Q);
-	if ( f->footnotes != footnotes )
-	    ___mkd_freefootnotes(f);
-	memset(f, 0, sizeof *f);
-    }
+	if ( f ) {
+		DELETE(f->in);
+		DELETE(f->out);
+		DELETE(f->Q);
+		if ( f->footnotes != footnotes )
+			___mkd_freefootnotes(f);
+		memset(f, 0, sizeof *f);
+	}
 }
 
 
@@ -123,15 +123,15 @@ ___mkd_freemmiot(MMIOT *f, void *footnotes)
 void
 ___mkd_freeLineRange(Line *anchor, Line *stop)
 {
-    Line *r = anchor->next;
+	Line *r = anchor->next;
 
-    if ( r != stop ) {
-	while ( r && (r->next != stop) )
-	    r = r->next;
-	if ( r ) r->next = 0;
-	___mkd_freeLines(anchor->next);
-    }
-    anchor->next = 0;
+	if ( r != stop ) {
+		while ( r && (r->next != stop) )
+			r = r->next;
+		if ( r ) r->next = 0;
+		___mkd_freeLines(anchor->next);
+	}
+	anchor->next = 0;
 }
 
 
@@ -140,18 +140,18 @@ ___mkd_freeLineRange(Line *anchor, Line *stop)
 void
 mkd_cleanup(Document *doc)
 {
-    if ( doc && (doc->magic == VALID_DOCUMENT) ) {
-	if ( doc->ctx ) {
-	    ___mkd_freemmiot(doc->ctx, 0);
-	    free(doc->ctx);
-	}
+	if ( doc && (doc->magic == VALID_DOCUMENT) ) {
+		if ( doc->ctx ) {
+			___mkd_freemmiot(doc->ctx, 0);
+			free(doc->ctx);
+		}
 
-	if ( doc->code) ___mkd_freeParagraph(doc->code);
-	if ( doc->title) ___mkd_freeLine(doc->title);
-	if ( doc->author) ___mkd_freeLine(doc->author);
-	if ( doc->date) ___mkd_freeLine(doc->date);
-	if ( T(doc->content) ) ___mkd_freeLines(T(doc->content));
-	memset(doc, 0, sizeof doc[0]);
-	free(doc);
-    }
+		if ( doc->code) ___mkd_freeParagraph(doc->code);
+		if ( doc->title) ___mkd_freeLine(doc->title);
+		if ( doc->author) ___mkd_freeLine(doc->author);
+		if ( doc->date) ___mkd_freeLine(doc->date);
+		if ( T(doc->content) ) ___mkd_freeLines(T(doc->content));
+		memset(doc, 0, sizeof doc[0]);
+		free(doc);
+	}
 }

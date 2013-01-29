@@ -20,17 +20,17 @@ STRING(struct kw) extratags;
 void
 mkd_define_tag(char *id, int selfclose)
 {
-    struct kw *p;
+	struct kw *p;
 
-    /* only add the new tag if it doesn't exist in
-     * either the standard or extra tag tables.
-     */
-    if ( !(p = mkd_search_tags(id, strlen(id))) ) {
-	p = &EXPAND(extratags);
-	p->id = id;
-	p->size = strlen(id);
-	p->selfclose = selfclose;
-    }
+	/* only add the new tag if it doesn't exist in
+	 * either the standard or extra tag tables.
+	 */
+	if ( !(p = mkd_search_tags(id, strlen(id))) ) {
+		p = &EXPAND(extratags);
+		p->id = id;
+		p->size = strlen(id);
+		p->selfclose = selfclose;
+	}
 }
 
 
@@ -39,9 +39,9 @@ mkd_define_tag(char *id, int selfclose)
 static int
 casort(struct kw *a, struct kw *b)
 {
-    if ( a->size != b->size )
-	return a->size - b->size;
-    return strncasecmp(a->id, b->id, b->size);
+	if ( a->size != b->size )
+		return a->size - b->size;
+	return strncasecmp(a->id, b->id, b->size);
 }
 
 
@@ -56,7 +56,7 @@ typedef int (*stfu)(const void*,const void*);
 void
 mkd_sort_tags()
 {
-    qsort(T(extratags), S(extratags), sizeof(struct kw), (stfu)casort);
+	qsort(T(extratags), S(extratags), sizeof(struct kw), (stfu)casort);
 }
 
 
@@ -65,19 +65,19 @@ mkd_sort_tags()
 struct kw*
 mkd_search_tags(char *pat, int len)
 {
-    struct kw key;
-    struct kw *ret;
-    
-    key.id = pat;
-    key.size = len;
-    
-    if ( (ret=bsearch(&key,blocktags,NR_blocktags,sizeof key,(stfu)casort)) )
-	return ret;
+	struct kw key;
+	struct kw *ret;
+	
+	key.id = pat;
+	key.size = len;
+	
+	if ( (ret=bsearch(&key,blocktags,NR_blocktags,sizeof key,(stfu)casort)) )
+		return ret;
 
-    if ( S(extratags) )
-	return bsearch(&key,T(extratags),S(extratags),sizeof key,(stfu)casort);
-    
-    return 0;
+	if ( S(extratags) )
+		return bsearch(&key,T(extratags),S(extratags),sizeof key,(stfu)casort);
+	
+	return 0;
 }
 
 
@@ -86,6 +86,6 @@ mkd_search_tags(char *pat, int len)
 void
 mkd_deallocate_tags()
 {
-    if ( S(extratags) > 0 )
-	DELETE(extratags);
+	if ( S(extratags) > 0 )
+		DELETE(extratags);
 } /* mkd_deallocate_tags */

@@ -16,13 +16,13 @@ extern void afree(void*);
 extern void adump();
 
 #define malloc	amalloc
-#define	calloc	acalloc
-#define realloc	arealloc
+#define calloc	acalloc
+#define realloc arealloc
 #define free	afree
 
 #else
 
-#define adump()	(void)1
+#define adump() (void)1
 
 #endif
 

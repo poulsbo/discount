@@ -5,18 +5,18 @@
 void
 mkd_with_html5_tags()
 {
-    static int populated = 0;
+	static int populated = 0;
 
-    if ( populated ) return;
-    populated = 1;
+	if ( populated ) return;
+	populated = 1;
 
-    mkd_define_tag("ASIDE", 0);
-    mkd_define_tag("FOOTER", 0);
-    mkd_define_tag("HEADER", 0);
-    mkd_define_tag("HGROUP", 0);
-    mkd_define_tag("NAV", 0);
-    mkd_define_tag("SECTION", 0);
-    mkd_define_tag("ARTICLE", 0);
+	mkd_define_tag("ASIDE", 0);
+	mkd_define_tag("FOOTER", 0);
+	mkd_define_tag("HEADER", 0);
+	mkd_define_tag("HGROUP", 0);
+	mkd_define_tag("NAV", 0);
+	mkd_define_tag("SECTION", 0);
+	mkd_define_tag("ARTICLE", 0);
 
-    mkd_sort_tags();
+	mkd_sort_tags();
 }

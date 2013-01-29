@@ -4,9 +4,9 @@
 #define _TAGS_D
 
 struct kw {
-    char *id;
-    int  size;
-    int  selfclose;
+	char *id;
+	int	 size;
+	int	 selfclose;
 } ;
 
 

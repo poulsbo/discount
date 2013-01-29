@@ -17,23 +17,23 @@
 #include "markdown.h"
 #include "amalloc.h"
 #include "tags.h"
-    
+	
 static int need_to_initrng = 1;
 
 void
 mkd_initialize()
 {
 
-    if ( need_to_initrng ) {
-	need_to_initrng = 0;
-	INITRNG(time(0));
-    }
+	if ( need_to_initrng ) {
+		need_to_initrng = 0;
+		INITRNG(time(0));
+	}
 }
 
 
 void
 mkd_shlib_destructor()
 {
-    mkd_deallocate_tags();
+	mkd_deallocate_tags();
 }
 

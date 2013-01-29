@@ -17,33 +17,33 @@
 static char *
 onlyifset(Line *l)
 {
-    char *ret = T(l->text) + l->dle;
+	char *ret = T(l->text) + l->dle;
 
-    return ret[0] ? ret : 0;
+	return ret[0] ? ret : 0;
 }
 
 char *
 mkd_doc_title(Document *doc)
 {
-    if ( doc && doc->title )
-	return onlyifset(doc->title);
-    return 0;
+	if ( doc && doc->title )
+		return onlyifset(doc->title);
+	return 0;
 }
 
 
 char *
 mkd_doc_author(Document *doc)
 {
-    if ( doc && doc->author )
-	return onlyifset(doc->author);
-    return 0;
+	if ( doc && doc->author )
+		return onlyifset(doc->author);
+	return 0;
 }
 
 
 char *
 mkd_doc_date(Document *doc)
 {
-    if ( doc && doc->date )
-	return onlyifset(doc->date);
-    return 0;
+	if ( doc && doc->date )
+		return onlyifset(doc->date);
+	return 0;
 }
