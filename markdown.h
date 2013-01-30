@@ -26,7 +26,7 @@ typedef struct footnote {
 typedef enum { chk_text, chk_code,
 			   chk_hr, chk_dash,
 			   chk_tilde, chk_backtick,
-			   chk_equal } line_type;
+			   chk_equal, chk_dollar } line_type;
 typedef struct line {
 	Cstring text;
 	struct line *next;
@@ -49,7 +49,7 @@ typedef struct paragraph {
 	struct paragraph *down;		/* recompiled contents of this paragraph */
 	struct line *text;			/* all the text in this paragraph */
 	char *ident;				/* %id% tag for QUOTE */
-	enum { WHITESPACE=0, CODE, QUOTE, MARKUP,
+	enum { WHITESPACE=0, CODE, LATEX, QUOTE, MARKUP,
 		   HTML, STYLE, DL, UL, OL, AL, LISTITEM,
 		   HDR, HR, TABLE, SOURCE } typ;
 	enum { IMPLICIT=0, PARA, CENTER} align;
@@ -128,6 +128,7 @@ typedef struct mmiot {
 #define INPUT_MASK		(MKD_NOHEADER|MKD_TABSTOP)
 
 	Callback_data *cb;
+    int hasLaTeX;
 } MMIOT;
 
 

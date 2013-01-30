@@ -189,7 +189,7 @@ checkline(Line *l)
 	int dashes = 0, spaces = 0,
 		equals = 0, underscores = 0,
 		stars = 0, tildes = 0,
-		backticks = 0;
+		backticks = 0, dollars = 0;
 
 	l->flags |= CHECKED;
 	l->kind = chk_text;
@@ -215,11 +215,12 @@ checkline(Line *l)
 		case '~':  tildes = 1; break;
 		case '`':  backticks = 1; break;
 #endif
+        case '$':  dollars = 1; break;
 		default:   return;
 		}
 	}
 
-	if ( dashes + equals + underscores + stars + tildes + backticks > 1 )
+	if ( dashes + equals + underscores + stars + tildes + backticks + dollars > 1 )
 		return;
 
 	if ( spaces ) {
@@ -235,6 +236,7 @@ checkline(Line *l)
 	else if ( tildes ) { l->kind = chk_tilde; }
 	else if ( backticks ) { l->kind = chk_backtick; }
 #endif
+	else if ( dollars ) { l->kind = chk_dollar; }
 }
 
 
@@ -645,6 +647,44 @@ fencedcodeblock(ParagraphRoot *d, Line **ptr)
 	return 0;
 }
 #endif
+
+
+static int
+islatexblockmarker(Line *r)
+{
+	if ( !(r->flags & CHECKED) )
+		checkline(r);
+    
+    return (r->kind == chk_dollar) && (r->count == 2);
+}
+
+static Paragraph *
+latexblock(ParagraphRoot *d, Line **ptr)
+{
+	Line *first, *r;
+	Paragraph *ret;
+    
+	first = (*ptr);
+	
+	/* don't allow zero-length LaTeX blocks
+	 */
+	if ( (first->next == 0) || iscodefence(first->next, first->count, 0) )
+		return 0;
+    
+	/* find the closing LaTeX block marker, discard the markers,
+	 * return a Paragraph with the contents
+	 */
+	for ( r = first; r && r->next; r = r->next )
+		if ( islatexblockmarker(r->next) ) {
+			(*ptr) = r->next->next;
+			ret = Pp(d, first->next, LATEX);
+			___mkd_freeLine(first);
+			___mkd_freeLine(r->next);
+			r->next = 0;
+			return ret;
+		}
+	return 0;
+}
 
 
 static int
@@ -1231,6 +1271,9 @@ compile(Line *ptr, int toplevel, MMIOT *f)
 		else if ( iscodefence(ptr,3,0) && (p=fencedcodeblock(&d, &ptr)) )
 			/* yay, it's already done */ ;
 #endif
+        else if ( islatexblockmarker(ptr) && (p=latexblock(&d, &ptr)) ) {
+            f->hasLaTeX = 1;
+        }
 		else if ( ishr(ptr) ) {
 			p = Pp(&d, 0, HR);
 			r = ptr;

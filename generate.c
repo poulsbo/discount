@@ -842,6 +842,21 @@ code(MMIOT *f, char *s, int length)
 } /* code */
 
 
+/* latex() -- write a string out as inline or block LaTeX.
+ */
+static void
+latex(MMIOT *f, char *s, int length)
+{
+	int i,c;
+    
+	for ( i=0; i < length; i++ )
+		if ( (c = s[i]) == 003)	 /* ^C: expand back to 2 spaces */
+			Qstring("  ", f);
+		else
+			cputc(c, f);
+} /* latex */
+
+
 /*	delspan() -- write out a chunk of text, blocking with <del>...</del>
  */
 static void
@@ -868,6 +883,17 @@ codespan(MMIOT *f, int size)
 	code(f, cursor(f)+(i-1), size);
 	Qstring("</code>", f);
 } /* codespan */
+
+
+/*	latexspan() -- write out a chunk of text as inline LaTeX
+ */
+static void
+latexspan(MMIOT *f, int size)
+{
+	Qstring("$", f);
+	latex(f, cursor(f)-1, size);
+	Qstring("$", f);
+} /* latexspan */
 
 
 /* before letting a tag through, validate against
@@ -1215,6 +1241,56 @@ tickhandler(MMIOT *f, int tickchar, int minticks, int allow_space, spanhandler s
 	return 0;
 }
 
+
+/* process a body of text encased in dollar signs.	If it
+ * works, generate the output and return 1, otherwise just return 0 and
+ * let the caller figure it out.
+ * 
+ * Rules: No whitespace immediately within outer $ characters.
+ * Final $ may not be immediately followed by a letter, a number, or a backtick.
+ * The entire equation may not span more than three lines (may not contain more than
+ * two line separators).
+ */
+static int
+dollarhandler(MMIOT *f, int dollarchar, spanhandler spanner)
+{
+    int i = 0, c;
+    if (peek(f, i) != dollarchar) return 0;
+    ++i;
+
+    // Can't be part of double '$' or at the end of a line or before a space
+    if (isspace(c = peek(f, i)) || c == EOF || c == dollarchar || peek(f, -1) == dollarchar) return 0;
+    
+    // Find the closing '$'. Count line breaks, and don't allow the expression to exceed three lines.
+    int size, lineCount = 1;
+    for (size = 0; (c=peek(f, i+size)) != EOF && c != dollarchar; ++size) {
+        if (c == '\r' || c == '\n') {
+            if (++lineCount > 3) {
+                return 0;
+            }
+            if (c == '\r' && peek(f, i+size+1) == '\n') {
+                ++size;
+            }
+        }
+    }
+    
+    // Make sure there is a closing $
+    if (c != dollarchar) return 0;
+    
+    // Enforce condition on closing $: Must not be preceded by whitespace
+    if (isspace(peek(f, i+size-1))) return 0;
+    
+    // Enforce condition on closing $: Must not be followed by alphanumeric char or backtick
+    c = peek(f, i+size+1);
+    if (isalnum(c) || c == '`') return 0;
+
+    shift(f, i);
+    (*spanner)(f, size);
+    shift(f, i+size-1);
+    f->hasLaTeX = 1;
+    return 1;
+}
+
 #define tag_text(f)		(f->flags & MKD_TAGTEXT)
 
 
@@ -1332,6 +1408,10 @@ text(MMIOT *f)
 						Qchar(c, f);
 					break;
 
+        case '$':	if ( tag_text(f) || !dollarhandler(f,c,latexspan) )
+                        Qchar(c, f);
+                    break;
+                
 		case '\\':	switch ( c = pull(f) ) {
 					case '&':	Qstring("&amp;", f);
 								break;
@@ -1603,6 +1683,18 @@ printcode(Line *t, MMIOT *f)
 
 
 static void
+printlatex(Line *t, MMIOT *f)
+{
+	Qstring("$$\n", f);
+	for (; t ; t = t->next ) {
+        latex(f, T(t->text), S(t->text));
+        Qchar('\n', f);
+	}
+	Qstring("$$", f);
+}
+
+
+static void
 printhtml(Line *t, MMIOT *f)
 {
 	int blanks;
@@ -1701,6 +1793,10 @@ display(Paragraph *p, MMIOT *f)
 	case CODE:
 		printcode(p->text, f);
 		break;
+            
+    case LATEX:
+        printlatex(p->text, f);
+        break;
 		
 	case QUOTE:
 		htmlify(p->down, p->ident ? "div" : "blockquote", p->ident, f);
