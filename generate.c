@@ -547,6 +547,7 @@ static linkytype specials[] = {
 static linkytype *
 pseudo(Cstring t)
 {
+#ifdef NO_PSEUDO_LINK_PROTOCOLS
 	int i;
 	linkytype *r;
 
@@ -554,6 +555,7 @@ pseudo(Cstring t)
 		if ( (S(t) > r->szpat) && (strncasecmp(T(t), r->pat, r->szpat) == 0) )
 			return r;
 	}
+#endif
 	return 0;
 }
 

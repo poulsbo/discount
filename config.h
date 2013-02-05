@@ -30,5 +30,6 @@
 // Manual additions (aliu)
 #define WITH_FENCED_CODE 1
 #define NO_CENTERED_PARAGRAPHS 1
+#define NO_PSEUDO_LINK_PROTOCOLS 1
 
 #endif/* __AC_MARKDOWN_D */
