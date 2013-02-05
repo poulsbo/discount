@@ -1760,8 +1760,16 @@ listdisplay(int typ, Paragraph *p, MMIOT* f)
 {
 	if ( p ) {
 		Qprintf(f, "<%cl", (typ==UL)?'u':'o');
-		if ( typ == AL )
-			Qprintf(f, " type=\"a\"");
+        switch (typ) {
+            case OL_a:
+                Qprintf(f, " type=\"a\""); break;
+            case OL_A:
+                Qprintf(f, " type=\"A\""); break;
+            case OL_i:
+                Qprintf(f, " type=\"i\""); break;
+            case OL_I:
+                Qprintf(f, " type=\"I\""); break;
+        }
 		Qprintf(f, ">\n");
 
 		for ( ; p ; p = p->next ) {
@@ -1805,6 +1813,10 @@ display(Paragraph *p, MMIOT *f)
 	case UL:
 	case OL:
 	case AL:
+    case OL_a:
+    case OL_A:
+    case OL_i:
+    case OL_I:
 		listdisplay(p->typ, p->down, f);
 		break;
 

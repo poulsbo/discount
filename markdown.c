@@ -515,11 +515,27 @@ islist(Line *t, int *clip, DWORD flags, int *list_type)
 		if ( T(t->text)[j-1] == '.' ) {
 
 			if ( !(flags & (MKD_NOALPHALIST|MKD_STRICT))
+                && (j >= t->dle + 2) ) {
+                int lowerRoman = 0, upperRoman = 0, nonRoman = 0;
+                for (int k=t->dle; k<j-1; ++k) {
+                    if      (strchr("ivx", T(t->text)[k])) { lowerRoman = 1; }
+                    else if (strchr("IVX", T(t->text)[k])) { upperRoman = 1; }
+                    else                                   { nonRoman   = 1; }
+                }
+                if (!nonRoman && (lowerRoman != upperRoman)) {
+                    j = nextnonblank(t,j);
+                    *clip = j;  // (j > 4) ? 4 : j;
+                    *list_type = lowerRoman ? OL_i : OL_I;
+                    return AL;
+                }
+			}
+
+			if ( !(flags & (MKD_NOALPHALIST|MKD_STRICT))
 									&& (j == t->dle + 2)
 						  && isalpha(T(t->text)[t->dle]) ) {
 				j = nextnonblank(t,j);
 				*clip = (j > 4) ? 4 : j;
-				*list_type = AL;
+                *list_type = islower(T(t->text)[t->dle]) ? OL_a : OL_A;
 				return AL;
 			}
 
@@ -690,7 +706,7 @@ latexblock(ParagraphRoot *d, Line **ptr)
 static int
 centered(Line *first, Line *last)
 {
-
+#ifndef NO_CENTERED_PARAGRAPHS
 	if ( first&&last ) {
 		int len = S(last->text);
 
@@ -701,6 +717,7 @@ centered(Line *first, Line *last)
 			return CENTER;
 		}
 	}
+#endif
 	return 0;
 }
 

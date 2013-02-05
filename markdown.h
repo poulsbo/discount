@@ -50,7 +50,7 @@ typedef struct paragraph {
 	struct line *text;			/* all the text in this paragraph */
 	char *ident;				/* %id% tag for QUOTE */
 	enum { WHITESPACE=0, CODE, LATEX, QUOTE, MARKUP,
-		   HTML, STYLE, DL, UL, OL, AL, LISTITEM,
+		   HTML, STYLE, DL, UL, OL, AL, OL_i, OL_I, OL_a, OL_A, LISTITEM,
 		   HDR, HR, TABLE, SOURCE } typ;
 	enum { IMPLICIT=0, PARA, CENTER} align;
 	int hnumber;				/* <Hn> for typ == HDR */
