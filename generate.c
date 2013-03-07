@@ -532,6 +532,10 @@ static linkytype imaget = { 0, 0, "<img src=\"", "\"",
 static linkytype linkt	= { 0, 0, "<a href=\"", "\"",
 							 0, ">", "</a>", MKD_NOLINKS, IS_URL };
 
+#ifdef NO_PSEUDO_LINK_PROTOCOLS
+static linkytype *pseudo(Cstring t) { return 0; }
+#else
+
 /*
  * pseudo-protocols for [][];
  *
@@ -554,7 +558,6 @@ static linkytype specials[] = {
 static linkytype *
 pseudo(Cstring t)
 {
-#ifndef NO_PSEUDO_LINK_PROTOCOLS
 	int i;
 	linkytype *r;
 
@@ -562,9 +565,10 @@ pseudo(Cstring t)
 		if ( (S(t) > r->szpat) && (strncasecmp(T(t), r->pat, r->szpat) == 0) )
 			return r;
 	}
-#endif
 	return 0;
 }
+
+#endif  // NO_PSEUDO_LINK_PROTOCOLS
 
 
 /* print out the start of an `img' or `a' tag, applying callbacks as needed.
