@@ -93,6 +93,13 @@ isthisnonword(MMIOT *f, int i)
 }
 
 
+static inline int
+isthisnonwordnonslash(MMIOT *f, int i)
+{
+	return isthisnonword(f, i) && peek(f,i) != '/';
+}
+
+
 /* return/set the current cursor position
  */
 #define mmiotseek(f,x)	(f->isp = x)
@@ -547,7 +554,7 @@ static linkytype specials[] = {
 static linkytype *
 pseudo(Cstring t)
 {
-#ifdef NO_PSEUDO_LINK_PROTOCOLS
+#ifndef NO_PSEUDO_LINK_PROTOCOLS
 	int i;
 	linkytype *r;
 
@@ -1118,12 +1125,22 @@ islike(MMIOT *f, char *s)
 			return 0;
 	   ++s;
 	}
+	else if ( s[0] == ':' ) {
+		if ( !isthisnonwordnonslash(f, -1) )
+			return 0;
+        ++s;
+	}
 
 	if ( !(len = strlen(s)) )
 		return 0;
 
 	if ( s[len-1] == '|' ) {
 		if ( !isthisnonword(f,len-1) )
+			return 0;
+		len--;
+	}
+	else if ( s[len-1] == ':' ) {
+		if ( !isthisnonwordnonslash(f,len-1) )
 			return 0;
 		len--;
 	}
@@ -1161,23 +1178,21 @@ static struct smarties {
 	{ '(',	"(c)",		"copy",	  2 },
 	{ '(',	"(r)",		"reg",	  2 },
 	{ '(',	"(tm)",		"trade",  3 },
-	{ '3',	"|3/4|",	"frac34", 2 },
-	{ '3',	"|3/4ths|", "frac34", 2 },
-	{ '1',	"|1/2|",	"frac12", 2 },
-	{ '1',	"|1/4|",	"frac14", 2 },
-	{ '1',	"|1/4th|",	"frac14", 2 },
-    { '1',  "|1/3|",    "#8531",  2 },
-    { '1',  "|1/5|",    "#8533",  2 },
-    { '1',  "|1/6|",    "#8537",  2 },
-    { '1',  "|1/8|",    "#8539",  2 },
-    { '2',  "|2/3|",    "#8532",  2 },
-    { '2',  "|2/5|",    "#8534",  2 },
-    { '3',  "|3/5|",    "#8535",  2 },
-    { '3',  "|3/8|",    "#8540",  2 },
-    { '4',  "|4/5|",    "#8536",  2 },
-    { '5',  "|5/6|",    "#8538",  2 },
-    { '5',  "|5/8|",    "#8541",  2 },
-    { '7',  "|7/8|",    "#8542",  2 },  
+	{ '3',	":3/4:",	"frac34", 2 },
+	{ '1',	":1/2:",	"frac12", 2 },
+	{ '1',	":1/4:",	"frac14", 2 },
+    { '1',  ":1/3:",    "#8531",  2 },
+    { '1',  ":1/5:",    "#8533",  2 },
+    { '1',  ":1/6:",    "#8537",  2 },
+    { '1',  ":1/8:",    "#8539",  2 },
+    { '2',  ":2/3:",    "#8532",  2 },
+    { '2',  ":2/5:",    "#8534",  2 },
+    { '3',  ":3/5:",    "#8535",  2 },
+    { '3',  ":3/8:",    "#8540",  2 },
+    { '4',  ":4/5:",    "#8536",  2 },
+    { '5',  ":5/6:",    "#8538",  2 },
+    { '5',  ":5/8:",    "#8541",  2 },
+    { '7',  ":7/8:",    "#8542",  2 },  
 	{ '&',	"&#0;",		 0,		  3 },
 } ;
 #define NRSMART ( sizeof smarties / sizeof smarties[0] )
