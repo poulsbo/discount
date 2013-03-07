@@ -525,6 +525,7 @@ typedef struct linkytype {
 	int		 flags;		/* reparse flags */
 	int		 kind;		/* tag is url or something else? */
 #define IS_URL	0x01
+#define IS_FRAC 0x02
 } linkytype;
 
 static linkytype imaget = { 0, 0, "<img src=\"", "\"",
@@ -532,9 +533,6 @@ static linkytype imaget = { 0, 0, "<img src=\"", "\"",
 static linkytype linkt	= { 0, 0, "<a href=\"", "\"",
 							 0, ">", "</a>", MKD_NOLINKS, IS_URL };
 
-#ifdef NO_PSEUDO_LINK_PROTOCOLS
-static linkytype *pseudo(Cstring t) { return 0; }
-#else
 
 /*
  * pseudo-protocols for [][];
@@ -549,6 +547,7 @@ static linkytype specials[] = {
 	{ "lang:", 5, "<span lang=\"", "\"", 0, ">", "</span>", 0, 0 },
 	{ "abbr:", 5, "<abbr title=\"", "\"", 0, ">", "</abbr>", 0, 0 },
 	{ "class:", 6, "<span class=\"", "\"", 0, ">", "</span>", 0, 0 },
+	{ "frac:", 5, 0, 0, 0, 0, 0, 0, IS_FRAC },
 } ;
 
 #define NR(x)	(sizeof x / sizeof x[0])
@@ -562,13 +561,12 @@ pseudo(Cstring t)
 	linkytype *r;
 
 	for ( i=0, r=specials; i < NR(specials); i++,r++ ) {
-		if ( (S(t) > r->szpat) && (strncasecmp(T(t), r->pat, r->szpat) == 0) )
+        // For most specials, length of 'xxx:foo' must be strictly greater than length of 'xxx:', but for 'frac:' may be ==.
+		if ( (S(t) >= r->szpat) && (strncasecmp(T(t), r->pat, r->szpat) == 0) && (S(t) > r->szpat || (r->kind & IS_FRAC)) )
 			return r;
 	}
 	return 0;
 }
-
-#endif  // NO_PSEUDO_LINK_PROTOCOLS
 
 
 /* print out the start of an `img' or `a' tag, applying callbacks as needed.
@@ -636,6 +634,37 @@ extra_linky(MMIOT *f, Cstring text, Footnote *ref)
 } /* extra_linky */
 
 
+/*
+ * Emit a vulgar fraction: <span class="FRAC_NUM_CLASS">1</span>&frasl;<span class="FRAC_DEN_CLASS">137</span>
+ # The CSS classes for the numerator and denominator should be defined in config.h.
+ */
+static void
+vulgarfrac(Cstring text, MMIOT *f)
+{
+    const char *limit = T(text) + S(text);
+    Qprintf(f, "<span class=\"" FRAC_NUM_CLASS "\">");
+    int mode = 0;
+    for (const char *p = T(text); mode < 2 && p < limit; ++p) {
+        switch (mode) {
+            case 0:  // before '/'
+                if (*p == '/') {
+                    Qprintf(f, "</span>&frasl;<span class=\"" FRAC_DEN_CLASS "\">");
+                    mode = 1; break;
+                }
+                Qchar(*p, f);
+                break;
+            case 1:  // after '/', before ']'
+                if (*p == ']') {
+                    mode = 2; break;
+                }
+                Qchar(*p, f);
+                break;
+        }
+    }
+    Qprintf(f, "</span>");
+}
+
+
 /* print out a linky (or fail if it's Not Allowed)
  */
 static int
@@ -683,6 +712,9 @@ linkyformat(MMIOT *f, Cstring text, int image, Footnote *ref)
 		___mkd_reparse(T(text), S(text), tag->flags, f, 0);
 		Qstring(tag->text_sfx, f);
 	}
+    else if ( tag->kind & IS_FRAC ) {
+        vulgarfrac(text, f);
+    }
 	else
 		Qwrite(T(ref->link) + tag->szpat, S(ref->link) - tag->szpat, f);
 
